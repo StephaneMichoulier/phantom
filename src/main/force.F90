@@ -190,7 +190,7 @@ subroutine force(icall,npart,xyzh,vxyzu,fxyzu,divcurlv,divcurlB,Bevol,dBevol,&
  use linklist,     only:ncells,get_neighbour_list,get_hmaxcell,get_cell_location,listneigh
  use options,      only:iresistive_heating
  use part,         only:rhoh,dhdrho,rhoanddhdrho,alphaind,iactive,gradh,&
-                        hrho,iphase,igas,maxgradh,dvdx,eta_nimhd,deltav,poten,iamtype
+                        hrho,iphase,igas,maxgradh,dvdx,eta_nimhd,deltav,poten,iamtype,use_dust
  use timestep,     only:dtcourant,dtforce,dtrad,bignumber,dtdiff
  use io_summary,   only:summary_variable, &
                         iosumdtf,iosumdtd,iosumdtv,iosumdtc,iosumdto,iosumdth,iosumdta, &
@@ -267,7 +267,7 @@ subroutine force(icall,npart,xyzh,vxyzu,fxyzu,divcurlv,divcurlB,Bevol,dBevol,&
 #endif
 #ifdef DUST
  real                   :: frac_stokes,frac_super
- real, allocatable, dimension(:,:)   :: fxyz_nodragold
+ real, allocatable, dimension(:,:) :: fxyz_nodragold
 #endif
  logical :: realviscosity,useresistiveheat
 #ifndef IND_TIMESTEPS
@@ -359,7 +359,7 @@ subroutine force(icall,npart,xyzh,vxyzu,fxyzu,divcurlv,divcurlB,Bevol,dBevol,&
  nstokes       = 0
  nsuper        = 0
  ndustres      = 0
- fxyz_nodragold = fxyz_nodrag
+ if (use_dust) fxyz_nodragold = fxyz_nodrag
 
  ! sink particle creation
  ipart_rhomax  = 0
@@ -1839,7 +1839,7 @@ subroutine compute_forces(i,iamgasi,iamdusti,xpartveci,hi,hi1,hi21,hi41,gradhi,g
                 if (maxvxyzu >= 4) then
                    !--energy dissipation due to drag
                    dragheating = dragterm*projv - &
-                   0.5*3.*pmassj*dt*(sdrag1*projvstar - sdrag2*projf_nodrag)**2*rhoi/rhoj/(rhoi + rhoj)*wdrag
+                   0.5*3.*pmassj*dt*(sdrag1*projvstar - sdrag2*projf_nodrag)**2/(rhoi + rhoj)*wdrag
                    fsum(idudtdissi) = fsum(idudtdissi) + dragheating
                 endif
              elseif (iamdusti .and. iamgasj) then
